@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Freedom Finance Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 body { margin:0; font-family:Arial; background:#f3f4f6; }
 .sidebar {
@@ -12,7 +14,7 @@ body { margin:0; font-family:Arial; background:#f3f4f6; }
 .sidebar h2 { text-align:center; }
 .sidebar a {
   display:block; padding:12px; color:#d1d5db;
-  text-decoration:none;
+  text-decoration:none; cursor:pointer;
 }
 .sidebar a:hover { background:#374151; color:white; }
 .content { margin-left:250px; padding:20px; }
@@ -37,111 +39,8 @@ table {
 th, td { padding:8px; border-bottom:1px solid #ddd; }
 
 .hidden { display:none; }
+canvas { background:white; margin-top:20px; padding:10px; border-radius:10px; }
 </style>
-
-<script>
-let data = JSON.parse(localStorage.getItem("financeData")) || {
-  receitas: [],
-  despesas: [],
-  rf: [],
-  rv: [],
-  cripto: []
-};
-
-function save() {
-  localStorage.setItem("financeData", JSON.stringify(data));
-  atualizarDashboard();
-}
-
-function show(id){
-  document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-}
-
-function total(arr){
-  return arr.reduce((s,i)=>s+i.valor,0);
-}
-
-function atualizarDashboard(){
-  const receitas = total(data.receitas);
-  const despesas = total(data.despesas);
-  const rf = total(data.rf);
-  const rv = total(data.rv);
-  const cripto = total(data.cripto);
-
-  document.getElementById("patrimonio").innerText =
-    (receitas - despesas + rf + rv + cripto).toFixed(2);
-
-  document.getElementById("totalRF").innerText = rf.toFixed(2);
-  document.getElementById("totalRV").innerText = rv.toFixed(2);
-  document.getElementById("totalCripto").innerText = cripto.toFixed(2);
-}
-
-function addReceita(){
-  const valor = parseFloat(document.getElementById("valorReceita").value);
-  if(!isNaN(valor)){ data.receitas.push({valor}); save(); listarFluxo(); }
-}
-function addDespesa(){
-  const valor = parseFloat(document.getElementById("valorDespesa").value);
-  if(!isNaN(valor)){ data.despesas.push({valor}); save(); listarFluxo(); }
-}
-
-function listarFluxo(){
-  let html="";
-  data.receitas.forEach(r=> html+=`<tr><td>Receita</td><td>R$ ${r.valor}</td></tr>`);
-  data.despesas.forEach(d=> html+=`<tr><td>Despesa</td><td>- R$ ${d.valor}</td></tr>`);
-  document.getElementById("tabelaFluxo").innerHTML=html;
-}
-
-function addRF(){
-  const valor=parseFloat(document.getElementById("valorRF").value);
-  if(!isNaN(valor)){ data.rf.push({valor}); save(); listarRF(); }
-}
-function listarRF(){
-  let html="";
-  data.rf.forEach(r=> html+=`<tr><td>R$ ${r.valor}</td></tr>`);
-  document.getElementById("tabelaRF").innerHTML=html;
-}
-
-function addRV(){
-  const valor=parseFloat(document.getElementById("valorRV").value);
-  if(!isNaN(valor)){ data.rv.push({valor}); save(); listarRV(); }
-}
-function listarRV(){
-  let html="";
-  data.rv.forEach(r=> html+=`<tr><td>R$ ${r.valor}</td></tr>`);
-  document.getElementById("tabelaRV").innerHTML=html;
-}
-
-function addCripto(){
-  const valor=parseFloat(document.getElementById("valorCripto").value);
-  if(!isNaN(valor)){ data.cripto.push({valor}); save(); listarCripto(); }
-}
-function listarCripto(){
-  let html="";
-  data.cripto.forEach(r=> html+=`<tr><td>R$ ${r.valor}</td></tr>`);
-  document.getElementById("tabelaCripto").innerHTML=html;
-}
-
-function calcularProjecao(){
-  const aporte=parseFloat(document.getElementById("aporte").value);
-  const taxa=parseFloat(document.getElementById("taxa").value)/100;
-  const anos=parseFloat(document.getElementById("anos").value);
-  if(!isNaN(aporte)&&!isNaN(taxa)&&!isNaN(anos)){
-    let total=0;
-    for(let i=0;i<anos*12;i++){
-      total=(total+aporte)*(1+taxa/12);
-    }
-    document.getElementById("resultadoProjecao").innerText=
-      "Patrimônio Projetado: R$ "+total.toFixed(2);
-  }
-}
-
-window.onload=function(){
-  listarFluxo(); listarRF(); listarRV(); listarCripto();
-  atualizarDashboard();
-}
-</script>
 </head>
 
 <body>
@@ -150,61 +49,155 @@ window.onload=function(){
 <h2>Freedom</h2>
 <a onclick="show('dashboard')">Dashboard</a>
 <a onclick="show('fluxo')">Fluxo de Caixa</a>
-<a onclick="show('rf')">Renda Fixa</a>
-<a onclick="show('rv')">Renda Variável</a>
-<a onclick="show('cripto')">Criptomoedas</a>
-<a onclick="show('projecao')">Projeção</a>
 </div>
 
 <div class="content">
 
 <div id="dashboard" class="section">
 <h1>Dashboard</h1>
-<div class="card">Patrimônio Total<br><strong>R$ <span id="patrimonio">0</span></strong></div>
-<div class="card">Renda Fixa<br><strong>R$ <span id="totalRF">0</span></strong></div>
-<div class="card">Renda Variável<br><strong>R$ <span id="totalRV">0</span></strong></div>
-<div class="card">Cripto<br><strong>R$ <span id="totalCripto">0</span></strong></div>
+
+<div class="card">Receitas<br><strong>R$ <span id="totalReceitas">0</span></strong></div>
+<div class="card">Despesas<br><strong>R$ <span id="totalDespesas">0</span></strong></div>
+<div class="card">Saldo<br><strong>R$ <span id="saldo">0</span></strong></div>
+
+<canvas id="graficoResumo"></canvas>
+<canvas id="graficoCategorias"></canvas>
+
 </div>
 
 <div id="fluxo" class="section hidden">
 <h1>Fluxo de Caixa</h1>
-<input type="number" id="valorReceita" placeholder="Nova Receita">
-<button onclick="addReceita()">Adicionar Receita</button>
-<input type="number" id="valorDespesa" placeholder="Nova Despesa">
-<button onclick="addDespesa()">Adicionar Despesa</button>
-<table><tbody id="tabelaFluxo"></tbody></table>
+
+<label>Mês:</label>
+<input type="month" id="mesFiltro">
+
+<h3>Nova Receita</h3>
+<input type="number" id="valorReceita" placeholder="Valor">
+<select id="categoriaReceita">
+<option>Salário</option>
+<option>Dividendos</option>
+<option>Rendimentos</option>
+<option>Recebimento PF</option>
+</select>
+<button onclick="addTransacao('receita')">Adicionar</button>
+
+<h3>Nova Despesa</h3>
+<input type="number" id="valorDespesa" placeholder="Valor">
+<select id="categoriaDespesa">
+<option>Moradia</option>
+<option>Alimentação</option>
+<option>Transporte</option>
+<option>Lazer</option>
+<option>Saúde</option>
+<option>Educação</option>
+</select>
+<button onclick="addTransacao('despesa')">Adicionar</button>
+
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Categoria</th>
+<th>Valor</th>
+<th>Mês</th>
+</tr>
+</thead>
+<tbody id="tabelaFluxo"></tbody>
+</table>
+
 </div>
 
-<div id="rf" class="section hidden">
-<h1>Renda Fixa</h1>
-<input type="number" id="valorRF" placeholder="Novo Investimento RF">
-<button onclick="addRF()">Adicionar</button>
-<table><tbody id="tabelaRF"></tbody></table>
 </div>
 
-<div id="rv" class="section hidden">
-<h1>Renda Variável</h1>
-<input type="number" id="valorRV" placeholder="Novo Investimento RV">
-<button onclick="addRV()">Adicionar</button>
-<table><tbody id="tabelaRV"></tbody></table>
-</div>
+<script>
+let data = JSON.parse(localStorage.getItem("financeData")) || [];
 
-<div id="cripto" class="section hidden">
-<h1>Criptomoedas</h1>
-<input type="number" id="valorCripto" placeholder="Novo Investimento Cripto">
-<button onclick="addCripto()">Adicionar</button>
-<table><tbody id="tabelaCripto"></tbody></table>
-</div>
+function save() {
+  localStorage.setItem("financeData", JSON.stringify(data));
+  atualizar();
+}
 
-<div id="projecao" class="section hidden">
-<h1>Projeção</h1>
-<input type="number" id="aporte" placeholder="Aporte Mensal">
-<input type="number" id="taxa" placeholder="Rentabilidade % ao ano">
-<input type="number" id="anos" placeholder="Anos">
-<button onclick="calcularProjecao()">Calcular</button>
-<p id="resultadoProjecao"></p>
-</div>
+function show(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
 
-</div>
+function addTransacao(tipo){
+  const mes = document.getElementById("mesFiltro").value;
+  const valor = parseFloat(
+    tipo==="receita" ? 
+    document.getElementById("valorReceita").value :
+    document.getElementById("valorDespesa").value
+  );
+
+  const categoria = tipo==="receita" ?
+    document.getElementById("categoriaReceita").value :
+    document.getElementById("categoriaDespesa").value;
+
+  if(!mes || isNaN(valor)) return;
+
+  data.push({tipo, categoria, valor, mes});
+  save();
+}
+
+function atualizar(){
+  const mes = document.getElementById("mesFiltro").value;
+  const filtrado = data.filter(t => t.mes === mes);
+
+  let receitas = 0;
+  let despesas = 0;
+  let categorias = {};
+
+  let tabela="";
+  filtrado.forEach(t=>{
+    tabela += `<tr>
+      <td>${t.tipo}</td>
+      <td>${t.categoria}</td>
+      <td>${t.tipo==='despesa' ? '- ' : ''}R$ ${t.valor}</td>
+      <td>${t.mes}</td>
+    </tr>`;
+
+    if(t.tipo==="receita") receitas+=t.valor;
+    else despesas+=t.valor;
+
+    if(!categorias[t.categoria]) categorias[t.categoria]=0;
+    categorias[t.categoria]+=t.valor;
+  });
+
+  document.getElementById("tabelaFluxo").innerHTML=tabela;
+  document.getElementById("totalReceitas").innerText=receitas.toFixed(2);
+  document.getElementById("totalDespesas").innerText=despesas.toFixed(2);
+  document.getElementById("saldo").innerText=(receitas-despesas).toFixed(2);
+
+  criarGraficos(receitas,despesas,categorias);
+}
+
+let graficoResumo;
+let graficoCategorias;
+
+function criarGraficos(receitas,despesas,categorias){
+  if(graficoResumo) graficoResumo.destroy();
+  if(graficoCategorias) graficoCategorias.destroy();
+
+  graficoResumo = new Chart(document.getElementById("graficoResumo"),{
+    type:'bar',
+    data:{
+      labels:['Receitas','Despesas'],
+      datasets:[{data:[receitas,despesas]}]
+    }
+  });
+
+  graficoCategorias = new Chart(document.getElementById("graficoCategorias"),{
+    type:'pie',
+    data:{
+      labels:Object.keys(categorias),
+      datasets:[{data:Object.values(categorias)}]
+    }
+  });
+}
+
+document.getElementById("mesFiltro").addEventListener("change", atualizar);
+</script>
+
 </body>
 </html>
