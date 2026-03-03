@@ -4,47 +4,39 @@
 <meta charset="UTF-8">
 <title>Freedom Finance Dashboard</title>
 <style>
-body { margin:0; font-family:Arial; background:#f4f6f9; }
+body { margin:0; font-family:Arial; background:#f3f4f6; }
 .sidebar {
-  height:100vh; width:220px; position:fixed;
-  background:#111827; padding-top:20px; color:white;
+  height:100vh; width:230px; position:fixed;
+  background:#111827; color:white; padding-top:20px;
 }
 .sidebar h2 { text-align:center; }
 .sidebar a {
-  padding:12px; display:block; color:#d1d5db;
+  display:block; padding:12px; color:#d1d5db;
   text-decoration:none;
 }
 .sidebar a:hover { background:#374151; color:white; }
-
-.content { margin-left:240px; padding:20px; }
+.content { margin-left:250px; padding:20px; }
 
 .card {
   background:white; padding:15px; margin:10px;
   border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);
-  display:inline-block; width:220px; text-align:center;
+  display:inline-block; width:220px;
 }
 
-input, select, button {
-  padding:6px; margin:4px;
-}
-
+input, select, button { padding:6px; margin:4px; }
 button {
   background:#2563eb; color:white; border:none;
   border-radius:5px; cursor:pointer;
 }
-
 button:hover { background:#1d4ed8; }
-
-.hidden { display:none; }
 
 table {
   width:100%; margin-top:15px; background:white;
   border-collapse:collapse;
 }
-th, td {
-  padding:8px; border-bottom:1px solid #ddd;
-  text-align:left;
-}
+th, td { padding:8px; border-bottom:1px solid #ddd; }
+
+.hidden { display:none; }
 </style>
 
 <script>
@@ -56,66 +48,99 @@ let data = JSON.parse(localStorage.getItem("financeData")) || {
   cripto: []
 };
 
-function saveData(){
+function save() {
   localStorage.setItem("financeData", JSON.stringify(data));
   atualizarDashboard();
 }
 
-function showSection(id){
-  document.querySelectorAll(".section")
-    .forEach(s => s.classList.add("hidden"));
+function show(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
+}
+
+function total(arr){
+  return arr.reduce((s,i)=>s+i.valor,0);
+}
+
+function atualizarDashboard(){
+  const receitas = total(data.receitas);
+  const despesas = total(data.despesas);
+  const rf = total(data.rf);
+  const rv = total(data.rv);
+  const cripto = total(data.cripto);
+
+  document.getElementById("patrimonio").innerText =
+    (receitas - despesas + rf + rv + cripto).toFixed(2);
+
+  document.getElementById("totalRF").innerText = rf.toFixed(2);
+  document.getElementById("totalRV").innerText = rv.toFixed(2);
+  document.getElementById("totalCripto").innerText = cripto.toFixed(2);
 }
 
 function addReceita(){
   const valor = parseFloat(document.getElementById("valorReceita").value);
-  const categoria = document.getElementById("categoriaReceita").value;
-  if(!isNaN(valor)){
-    data.receitas.push({valor, categoria});
-    saveData();
-    listarFluxo();
-  }
+  if(!isNaN(valor)){ data.receitas.push({valor}); save(); listarFluxo(); }
 }
-
 function addDespesa(){
   const valor = parseFloat(document.getElementById("valorDespesa").value);
-  const categoria = document.getElementById("categoriaDespesa").value;
-  if(!isNaN(valor)){
-    data.despesas.push({valor, categoria});
-    saveData();
-    listarFluxo();
-  }
+  if(!isNaN(valor)){ data.despesas.push({valor}); save(); listarFluxo(); }
 }
 
 function listarFluxo(){
-  let tabela = "";
-  data.receitas.forEach(r=>{
-    tabela += `<tr><td>Receita</td><td>${r.categoria}</td><td>R$ ${r.valor.toFixed(2)}</td></tr>`;
-  });
-  data.despesas.forEach(d=>{
-    tabela += `<tr><td>Despesa</td><td>${d.categoria}</td><td>- R$ ${d.valor.toFixed(2)}</td></tr>`;
-  });
-  document.getElementById("fluxoTabela").innerHTML = tabela;
+  let html="";
+  data.receitas.forEach(r=> html+=`<tr><td>Receita</td><td>R$ ${r.valor}</td></tr>`);
+  data.despesas.forEach(d=> html+=`<tr><td>Despesa</td><td>- R$ ${d.valor}</td></tr>`);
+  document.getElementById("tabelaFluxo").innerHTML=html;
 }
 
-function total(array){
-  return array.reduce((soma,item)=> soma + item.valor,0);
+function addRF(){
+  const valor=parseFloat(document.getElementById("valorRF").value);
+  if(!isNaN(valor)){ data.rf.push({valor}); save(); listarRF(); }
+}
+function listarRF(){
+  let html="";
+  data.rf.forEach(r=> html+=`<tr><td>R$ ${r.valor}</td></tr>`);
+  document.getElementById("tabelaRF").innerHTML=html;
 }
 
-function atualizarDashboard(){
-  const totalReceitas = total(data.receitas);
-  const totalDespesas = total(data.despesas);
-  const patrimonio = totalReceitas - totalDespesas;
-
-  document.getElementById("patrimonio").innerText = patrimonio.toFixed(2);
-  document.getElementById("receitasMes").innerText = totalReceitas.toFixed(2);
-  document.getElementById("despesasMes").innerText = totalDespesas.toFixed(2);
+function addRV(){
+  const valor=parseFloat(document.getElementById("valorRV").value);
+  if(!isNaN(valor)){ data.rv.push({valor}); save(); listarRV(); }
+}
+function listarRV(){
+  let html="";
+  data.rv.forEach(r=> html+=`<tr><td>R$ ${r.valor}</td></tr>`);
+  document.getElementById("tabelaRV").innerHTML=html;
 }
 
-window.onload = function(){
-  listarFluxo();
+function addCripto(){
+  const valor=parseFloat(document.getElementById("valorCripto").value);
+  if(!isNaN(valor)){ data.cripto.push({valor}); save(); listarCripto(); }
+}
+function listarCripto(){
+  let html="";
+  data.cripto.forEach(r=> html+=`<tr><td>R$ ${r.valor}</td></tr>`);
+  document.getElementById("tabelaCripto").innerHTML=html;
+}
+
+function calcularProjecao(){
+  const aporte=parseFloat(document.getElementById("aporte").value);
+  const taxa=parseFloat(document.getElementById("taxa").value)/100;
+  const anos=parseFloat(document.getElementById("anos").value);
+  if(!isNaN(aporte)&&!isNaN(taxa)&&!isNaN(anos)){
+    let total=0;
+    for(let i=0;i<anos*12;i++){
+      total=(total+aporte)*(1+taxa/12);
+    }
+    document.getElementById("resultadoProjecao").innerText=
+      "Patrimônio Projetado: R$ "+total.toFixed(2);
+  }
+}
+
+window.onload=function(){
+  listarFluxo(); listarRF(); listarRV(); listarCripto();
   atualizarDashboard();
-};
+}
 </script>
 </head>
 
@@ -123,86 +148,61 @@ window.onload = function(){
 
 <div class="sidebar">
 <h2>Freedom</h2>
-<a href="#" onclick="showSection('dashboard')">Dashboard</a>
-<a href="#" onclick="showSection('fluxo')">Fluxo de Caixa</a>
-<a href="#" onclick="showSection('rf')">Renda Fixa</a>
-<a href="#" onclick="showSection('rv')">Renda Variável</a>
-<a href="#" onclick="showSection('cripto')">Cripto</a>
-<a href="#" onclick="showSection('projecao')">Projeção</a>
+<a onclick="show('dashboard')">Dashboard</a>
+<a onclick="show('fluxo')">Fluxo de Caixa</a>
+<a onclick="show('rf')">Renda Fixa</a>
+<a onclick="show('rv')">Renda Variável</a>
+<a onclick="show('cripto')">Criptomoedas</a>
+<a onclick="show('projecao')">Projeção</a>
 </div>
 
 <div class="content">
 
 <div id="dashboard" class="section">
 <h1>Dashboard</h1>
-<div class="card">
-<h3>Patrimônio</h3>
-<p>R$ <span id="patrimonio">0.00</span></p>
-</div>
-<div class="card">
-<h3>Receitas</h3>
-<p>R$ <span id="receitasMes">0.00</span></p>
-</div>
-<div class="card">
-<h3>Despesas</h3>
-<p>R$ <span id="despesasMes">0.00</span></p>
-</div>
+<div class="card">Patrimônio Total<br><strong>R$ <span id="patrimonio">0</span></strong></div>
+<div class="card">Renda Fixa<br><strong>R$ <span id="totalRF">0</span></strong></div>
+<div class="card">Renda Variável<br><strong>R$ <span id="totalRV">0</span></strong></div>
+<div class="card">Cripto<br><strong>R$ <span id="totalCripto">0</span></strong></div>
 </div>
 
 <div id="fluxo" class="section hidden">
 <h1>Fluxo de Caixa</h1>
-
-<h3>Nova Receita</h3>
-<input type="number" id="valorReceita" placeholder="Valor">
-<select id="categoriaReceita">
-<option>Salário</option>
-<option>Dividendos</option>
-<option>Recebimento PF</option>
-<option>Outros</option>
-</select>
-<button onclick="addReceita()">Salvar</button>
-
-<h3>Nova Despesa</h3>
-<input type="number" id="valorDespesa" placeholder="Valor">
-<select id="categoriaDespesa">
-<option>Moradia</option>
-<option>Alimentação</option>
-<option>Transporte</option>
-<option>Lazer</option>
-<option>Outros</option>
-</select>
-<button onclick="addDespesa()">Salvar</button>
-
-<table>
-<thead>
-<tr>
-<th>Tipo</th>
-<th>Categoria</th>
-<th>Valor</th>
-</tr>
-</thead>
-<tbody id="fluxoTabela"></tbody>
-</table>
+<input type="number" id="valorReceita" placeholder="Nova Receita">
+<button onclick="addReceita()">Adicionar Receita</button>
+<input type="number" id="valorDespesa" placeholder="Nova Despesa">
+<button onclick="addDespesa()">Adicionar Despesa</button>
+<table><tbody id="tabelaFluxo"></tbody></table>
 </div>
 
 <div id="rf" class="section hidden">
 <h1>Renda Fixa</h1>
-<p>Estrutura preparada para CDB, Tesouro, LCI.</p>
+<input type="number" id="valorRF" placeholder="Novo Investimento RF">
+<button onclick="addRF()">Adicionar</button>
+<table><tbody id="tabelaRF"></tbody></table>
 </div>
 
 <div id="rv" class="section hidden">
 <h1>Renda Variável</h1>
-<p>Estrutura preparada para Ações, FIIs, ETFs.</p>
+<input type="number" id="valorRV" placeholder="Novo Investimento RV">
+<button onclick="addRV()">Adicionar</button>
+<table><tbody id="tabelaRV"></tbody></table>
 </div>
 
 <div id="cripto" class="section hidden">
 <h1>Criptomoedas</h1>
-<p>Estrutura preparada para BTC, ETH e demais ativos.</p>
+<input type="number" id="valorCripto" placeholder="Novo Investimento Cripto">
+<button onclick="addCripto()">Adicionar</button>
+<table><tbody id="tabelaCripto"></tbody></table>
 </div>
 
 <div id="projecao" class="section hidden">
-<h1>Projeção de Liberdade Financeira</h1>
-<p>Em breve incluiremos simulação com juros compostos.</p>
+<h1>Projeção</h1>
+<input type="number" id="aporte" placeholder="Aporte Mensal">
+<input type="number" id="taxa" placeholder="Rentabilidade % ao ano">
+<input type="number" id="anos" placeholder="Anos">
+<button onclick="calcularProjecao()">Calcular</button>
+<p id="resultadoProjecao"></p>
 </div>
 
 </div>
