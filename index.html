@@ -1,52 +1,141 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Freedom Finance Dashboard</title>
-  <meta charset="UTF-8">
-  <style>
-    body {
-      font-family: Arial;
-      background: #f4f6f9;
-      margin: 0;
-      padding: 20px;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      margin: 10px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      display: inline-block;
-      width: 200px;
-      text-align: center;
-    }
-    h1 {
-      text-align: center;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Freedom Finance Dashboard</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+}
+
+.sidebar {
+  height: 100vh;
+  width: 220px;
+  position: fixed;
+  background: #1f2937;
+  padding-top: 20px;
+}
+
+.sidebar h2 {
+  color: white;
+  text-align: center;
+}
+
+.sidebar a {
+  padding: 12px;
+  text-decoration: none;
+  color: #d1d5db;
+  display: block;
+}
+
+.sidebar a:hover {
+  background: #374151;
+  color: white;
+}
+
+.content {
+  margin-left: 240px;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: inline-block;
+  width: 220px;
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
+</style>
+
+<script>
+function showSection(sectionId) {
+  const sections = document.querySelectorAll(".section");
+  sections.forEach(sec => sec.classList.add("hidden"));
+  document.getElementById(sectionId).classList.remove("hidden");
+}
+</script>
+
 </head>
+
 <body>
 
-<h1>Freedom Finance Dashboard</h1>
-
-<div class="card">
-  <h3>Patrimônio Total</h3>
-  <p>R$ 0,00</p>
+<div class="sidebar">
+  <h2>Freedom</h2>
+  <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+  <a href="#" onclick="showSection('fluxo')">Fluxo de Caixa</a>
+  <a href="#" onclick="showSection('rf')">Renda Fixa</a>
+  <a href="#" onclick="showSection('rv')">Renda Variável</a>
+  <a href="#" onclick="showSection('cripto')">Criptomoedas</a>
+  <a href="#" onclick="showSection('projecao')">Projeção</a>
 </div>
 
-<div class="card">
-  <h3>Receita do Mês</h3>
-  <p>R$ 0,00</p>
-</div>
+<div class="content">
 
-<div class="card">
-  <h3>Despesa do Mês</h3>
-  <p>R$ 0,00</p>
-</div>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="section">
+    <h1>Dashboard</h1>
 
-<div class="card">
-  <h3>Criptomoedas</h3>
-  <p>R$ 0,00</p>
+    <div class="card">
+      <h3>Patrimônio Total</h3>
+      <p>R$ 0,00</p>
+    </div>
+
+    <div class="card">
+      <h3>Renda Fixa</h3>
+      <p>R$ 0,00</p>
+    </div>
+
+    <div class="card">
+      <h3>Renda Variável</h3>
+      <p>R$ 0,00</p>
+    </div>
+
+    <div class="card">
+      <h3>Criptomoedas</h3>
+      <p>R$ 0,00</p>
+    </div>
+  </div>
+
+  <!-- FLUXO DE CAIXA -->
+  <div id="fluxo" class="section hidden">
+    <h1>Fluxo de Caixa</h1>
+    <p>Aqui iremos adicionar receitas, despesas e categorias.</p>
+  </div>
+
+  <!-- RENDA FIXA -->
+  <div id="rf" class="section hidden">
+    <h1>Renda Fixa</h1>
+    <p>Controle de CDB, Tesouro, LCI, etc.</p>
+  </div>
+
+  <!-- RENDA VARIÁVEL -->
+  <div id="rv" class="section hidden">
+    <h1>Renda Variável</h1>
+    <p>Controle de Ações, FIIs e ETFs.</p>
+  </div>
+
+  <!-- CRIPTOMOEDAS -->
+  <div id="cripto" class="section hidden">
+    <h1>Criptomoedas</h1>
+    <p>Controle de BTC, ETH e demais ativos digitais.</p>
+  </div>
+
+  <!-- PROJEÇÃO -->
+  <div id="projecao" class="section hidden">
+    <h1>Projeção de Liberdade Financeira</h1>
+    <p>Simulação de patrimônio futuro e renda passiva.</p>
+  </div>
+
 </div>
 
 </body>
