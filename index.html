@@ -1,45 +1,85 @@
-body {
-  margin:0;
-  font-family: Arial;
-  background:#f3f4f6;
-}
+<!DOCTYPE html>
+<html lang="pt-br">
 
-.sidebar{
-  width:230px;
-  height:100vh;
-  position:fixed;
-  background:#111827;
-  color:white;
-  padding-top:20px;
-}
+<head>
 
-.sidebar a{
-  display:block;
-  padding:12px;
-  color:#d1d5db;
-  cursor:pointer;
-}
+<meta charset="UTF-8">
+<title>Freedom Finance Dashboard</title>
 
-.sidebar a:hover{
-  background:#374151;
-  color:white;
-}
+<link rel="stylesheet" href="./css/styles.css">
 
-.content{
-  margin-left:250px;
-  padding:20px;
-}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-.hidden{
-  display:none;
-}
+</head>
 
-.card{
-  background:white;
-  padding:15px;
-  margin:10px;
-  border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-  display:inline-block;
-  width:220px;
-}
+
+<body>
+
+<div class="sidebar">
+
+<h2>Freedom</h2>
+
+<a onclick="App.show('dashboard')">Dashboard</a>
+<a onclick="App.show('fluxo')">Fluxo de Caixa</a>
+<a onclick="App.show('investimentos')">Investimentos</a>
+<a onclick="App.show('projecao')">Projeção</a>
+
+</div>
+
+
+<div class="content">
+
+<section id="dashboard" class="section">
+
+<h1>Dashboard</h1>
+
+<div id="dashboardCards"></div>
+
+<canvas id="graficoPatrimonio"></canvas>
+
+</section>
+
+
+
+<section id="fluxo" class="section hidden">
+
+<h1>Fluxo de Caixa</h1>
+
+<div id="fluxoContainer"></div>
+
+</section>
+
+
+
+<section id="investimentos" class="section hidden">
+
+<h1>Investimentos</h1>
+
+<div id="investimentosContainer"></div>
+
+</section>
+
+
+
+<section id="projecao" class="section hidden">
+
+<h1>Projeção de Liberdade Financeira</h1>
+
+<div id="projecaoContainer"></div>
+
+</section>
+
+</div>
+
+
+<script src="./js/storage.js"></script>
+<script src="./js/fluxo.js"></script>
+<script src="./js/investimentos.js"></script>
+<script src="./js/dashboard.js"></script>
+<script src="./js/projecao.js"></script>
+<script src="./js/app.js"></script>
+
+
+</body>
+
+</html>
