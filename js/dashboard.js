@@ -1,72 +1,109 @@
-const Dashboard = {
+const Investimentos = {
+
+  data: Storage.getData(),
 
   init() {
-    this.renderCards();
-    this.renderGrafico();
+    this.render();
   },
 
-  getData() {
-    return Storage.getData();
-  },
+  addRendaFixa() {
 
-  calcularTotais() {
+    const nome = document.getElementById("rfNome").value;
+    const valor = parseFloat(document.getElementById("rfValor").value);
 
-    const data = this.getData();
+    if(!nome || !valor) return;
 
-    let receitas = 0;
-    let despesas = 0;
-
-    data.fluxo.forEach(t => {
-      if (t.tipo === "receita") receitas += t.valor;
-      if (t.tipo === "despesa") despesas += t.valor;
+    this.data.rendaFixa.push({
+      nome,
+      valor
     });
 
-    const saldo = receitas - despesas;
-
-    return { receitas, despesas, saldo };
+    Storage.saveData(this.data);
+    this.render();
   },
 
-  renderCards() {
+  addRendaVariavel() {
 
-    const container = document.getElementById("dashboardCards");
+    const ativo = document.getElementById("rvAtivo").value;
+    const valor = parseFloat(document.getElementById("rvValor").value);
 
-    const totais = this.calcularTotais();
+    if(!ativo || !valor) return;
+
+    this.data.rendaVariavel.push({
+      ativo,
+      valor
+    });
+
+    Storage.saveData(this.data);
+    this.render();
+  },
+
+  addCripto() {
+
+    const ativo = document.getElementById("criptoAtivo").value;
+    const valor = parseFloat(document.getElementById("criptoValor").value);
+
+    if(!ativo || !valor) return;
+
+    this.data.cripto.push({
+      ativo,
+      valor
+    });
+
+    Storage.saveData(this.data);
+    this.render();
+  },
+
+  render() {
+
+    const container = document.getElementById("investimentosContainer");
 
     container.innerHTML = `
-      <div class="card">
-        <h3>Receitas</h3>
-        <p>R$ ${totais.receitas.toFixed(2)}</p>
-      </div>
 
-      <div class="card">
-        <h3>Despesas</h3>
-        <p>R$ ${totais.despesas.toFixed(2)}</p>
-      </div>
+      <h3>Renda Fixa</h3>
 
-      <div class="card">
-        <h3>Saldo</h3>
-        <p>R$ ${totais.saldo.toFixed(2)}</p>
-      </div>
+      <input id="rfNome" placeholder="Tipo (CDB, Tesouro)">
+      <input id="rfValor" type="number" placeholder="Valor investido">
+
+      <button onclick="Investimentos.addRendaFixa()">Adicionar</button>
+
+      <ul>
+        ${this.data.rendaFixa.map(i => `
+          <li>${i.nome} — R$ ${i.valor}</li>
+        `).join("")}
+      </ul>
+
+      <hr>
+
+      <h3>Renda Variável</h3>
+
+      <input id="rvAtivo" placeholder="Ativo (Ação, FII)">
+      <input id="rvValor" type="number" placeholder="Valor investido">
+
+      <button onclick="Investimentos.addRendaVariavel()">Adicionar</button>
+
+      <ul>
+        ${this.data.rendaVariavel.map(i => `
+          <li>${i.ativo} — R$ ${i.valor}</li>
+        `).join("")}
+      </ul>
+
+      <hr>
+
+      <h3>Criptomoedas</h3>
+
+      <input id="criptoAtivo" placeholder="Cripto (BTC, ETH)">
+      <input id="criptoValor" type="number" placeholder="Valor investido">
+
+      <button onclick="Investimentos.addCripto()">Adicionar</button>
+
+      <ul>
+        ${this.data.cripto.map(i => `
+          <li>${i.ativo} — R$ ${i.valor}</li>
+        `).join("")}
+      </ul>
+
     `;
-  },
-
-  renderGrafico() {
-
-    const totais = this.calcularTotais();
-
-    const ctx = document.getElementById("graficoPatrimonio");
-
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["Receitas", "Despesas"],
-        datasets: [{
-          label: "Resumo Financeiro",
-          data: [totais.receitas, totais.despesas],
-          backgroundColor: ["#22c55e", "#ef4444"]
-        }]
-      }
-    });
 
   }
 
